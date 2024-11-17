@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Results</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <div class="logo">
+        <img src="logo.png" alt="Mentor Logo">
+        <span>Meal Mentor</span>
+    </div>
+    <div class="auth-buttons">
+        <button onclick="window.location.href='login.html';">Login</button>
+        <button onclick="window.location.href='signup.html';">Sign Up</button>
+    </div>
+</header>
+
+<main>
+    <div class="recipe-info">
+        <h2>Recipe Result</h2>
+        
+        <!-- Recipe Details -->
+        <div id="recipe-details">
+            <h3 id="recipe-title">Recipe Title</h3>
+            <img id="recipe-image" src="placeholder.jpg" alt="Recipe Image">
+            <h4>Ingredients</h4>
+            <ul id="recipe-ingredients">
+                <!-- Ingredients will be dynamically populated -->
+            </ul>
+            <button id="video-button">Watch Recipe Video</button>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <button onclick="window.location.href='index.html';">Back to Home</button>
+</footer>
+
+<script>
+// Extracting the recipe name from URL
+const urlParams = new URLSearchParams(window.location.search);
+const recipeName = urlParams.get('recipe');
+
+// Simulated recipe data (this would come from a database in the future)
+const recipeData = {
+    "Pasta Primavera": {
+        title: "Pasta Primavera",
+        image: "pasta.jpg",
+        ingredients: ["Pasta", "Tomatoes", "Garlic", "Olive Oil", "Parmesan"],
+        videoLink: "https://example.com/video-pasta"
+    },
+    "Chicken Salad": {
+        title: "Chicken Salad",
+        image: "chicken-salad.jpg",
+        ingredients: ["Chicken", "Lettuce", "Tomatoes", "Cucumber", "Dressing"],
+        videoLink: "https://example.com/video-chicken-salad"
+    }
+};
+
+// Normalize the recipe name and check for a match
+const recipeNameNormalized = recipeName ? recipeName.trim().replace(/\s+/g, ' ').toLowerCase() : '';
+const matchedRecipe = Object.keys(recipeData).find(key => key.toLowerCase() === recipeNameNormalized);
+
+// Display recipe data based on search term
+if (matchedRecipe) {
+    const recipe = recipeData[matchedRecipe];
+
+    document.getElementById("recipe-title").textContent = recipe.title;
+    document.getElementById("recipe-image").src = recipe.image;
+    const ingredientsList = document.getElementById("recipe-ingredients");
+
+    recipe.ingredients.forEach(ingredient => {
+        let li = document.createElement("li");
+        li.textContent = ingredient;
+        ingredientsList.appendChild(li);
+    });
+
+    // Set up the video button with the link
+    document.getElementById("video-button").onclick = function() {
+        if (recipe.videoLink) {
+            console.log("Opening video link:", recipe.videoLink); // Debugging output
+            window.open(recipe.videoLink, "_blank");
+        } else {
+            alert("No video available for this recipe.");
+        }
+    };
+} else {
+    document.getElementById("recipe-title").textContent = "Recipe Not Found";
+    document.getElementById("recipe-image").src = "not-found.jpg";  // Placeholder image if no recipe found
+    document.getElementById("recipe-ingredients").innerHTML = "<li>No ingredients available.</li>";
+    document.getElementById("video-button").onclick = function() {
+        alert("No video available for this recipe.");
+    };
+}
+</script>
+
+</body>
+</html>
