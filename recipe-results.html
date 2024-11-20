@@ -25,7 +25,7 @@
         
         <!-- Recipe Details -->
         <div id="recipe-details">
-            <h3 id="recipe-title">Recipe Title</h3>
+            <h3 id="recipe-title">Loading...</h3>
             <img id="recipe-image" src="placeholder.jpg" alt="Recipe Image">
             <h4>Ingredients</h4>
             <ul id="recipe-ingredients">
@@ -45,57 +45,67 @@
 const urlParams = new URLSearchParams(window.location.search);
 const recipeName = urlParams.get('recipe');
 
-// Simulated recipe data (this would come from a database in the future)
-const recipeData = {
-    "Pasta Primavera": {
-        title: "Pasta Primavera",
-        image: "pasta.jpg",
-        ingredients: ["Pasta", "Tomatoes", "Garlic", "Olive Oil", "Parmesan"],
-        videoLink: "https://example.com/video-pasta"
-    },
-    "Chicken Salad": {
-        title: "Chicken Salad",
-        image: "chicken-salad.jpg",
-        ingredients: ["Chicken", "Lettuce", "Tomatoes", "Cucumber", "Dressing"],
-        videoLink: "https://example.com/video-chicken-salad"
-    }
-};
+// API details
+const API_URL = 'https://default-application_9823899.rapidapi.com/recipes';
+const API_KEY = 'ebd6a595e4msha7fb76abf8663dap1fdbd4jsnb44ec8e';
 
-// Normalize the recipe name and check for a match
-const recipeNameNormalized = recipeName ? recipeName.trim().replace(/\s+/g, ' ').toLowerCase() : '';
-const matchedRecipe = Object.keys(recipeData).find(key => key.toLowerCase() === recipeNameNormalized);
+// Function to fetch recipe data
+async function fetchRecipe(recipeName) {
+    try {
+        const response = await fetch(`${API_URL}?query=${recipeName}`, {
+            method: 'GET',
+            headers: {
+                'X-RapidAPI-Key': API_KEY,
+                'X-RapidAPI-Host': 'default-application_9823899.rapidapi.com'
+            }
+        });
 
-// Display recipe data based on search term
-if (matchedRecipe) {
-    const recipe = recipeData[matchedRecipe];
-
-    document.getElementById("recipe-title").textContent = recipe.title;
-    document.getElementById("recipe-image").src = recipe.image;
-    const ingredientsList = document.getElementById("recipe-ingredients");
-
-    recipe.ingredients.forEach(ingredient => {
-        let li = document.createElement("li");
-        li.textContent = ingredient;
-        ingredientsList.appendChild(li);
-    });
-
-    // Set up the video button with the link
-    document.getElementById("video-button").onclick = function() {
-        if (recipe.videoLink) {
-            console.log("Opening video link:", recipe.videoLink); // Debugging output
-            window.open(recipe.videoLink, "_blank");
-        } else {
-            alert("No video available for this recipe.");
+        if (!response.ok) {
+            throw new Error('Failed to fetch recipe data');
         }
-    };
-} else {
-    document.getElementById("recipe-title").textContent = "Recipe Not Found";
-    document.getElementById("recipe-image").src = "not-found.jpg";  // Placeholder image if no recipe found
-    document.getElementById("recipe-ingredients").innerHTML = "<li>No ingredients available.</li>";
-    document.getElementById("video-button").onclick = function() {
-        alert("No video available for this recipe.");
-    };
+
+        const data = await response.json();
+        return data.recipes[0]; // Assuming the first recipe is the most relevant
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
 }
+
+// Populate the recipe details
+async function displayRecipe() {
+    const recipe = await fetchRecipe(recipeName);
+
+    if (recipe) {
+        document.getElementById("recipe-title").textContent = recipe.title;
+        document.getElementById("recipe-image").src = recipe.image || "placeholder.jpg";
+
+        const ingredientsList = document.getElementById("recipe-ingredients");
+        ingredientsList.innerHTML = ""; // Clear previous content
+        recipe.ingredients.forEach(ingredient => {
+            let li = document.createElement("li");
+            li.textContent = ingredient;
+            ingredientsList.appendChild(li);
+        });
+
+        // Set up the video button for YouTube search
+        document.getElementById("video-button").onclick = function() {
+            const youtubeQuery = encodeURIComponent(recipe.title);
+            window.open(`https://www.youtube.com/results?search_query=${youtubeQuery}`, "_blank");
+        };
+    } else {
+        // If no recipe is found
+        document.getElementById("recipe-title").textContent = "Recipe Not Found";
+        document.getElementById("recipe-image").src = "not-found.jpg";
+        document.getElementById("recipe-ingredients").innerHTML = "<li>No ingredients available.</li>";
+        document.getElementById("video-button").onclick = function() {
+            alert("No video available for this recipe.");
+        };
+    }
+}
+
+// Call the function to display the recipe
+displayRecipe();
 </script>
 
 </body>
